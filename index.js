@@ -66,7 +66,7 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
         var m = content.body.match(cmdExp)
 	    if (m != null) {
 	        processCommand(m)
-	    } else if( content.body.startsWith(`${process.env.USER}:")) {
+	    } else if( content.body.startsWith(`${process.env.USER}:`)) {
             request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
                 if (response.body.results.includes('commander') || response.body.results.includes('master')) {
                     request.post(process.env.LINGUA_HOST, {
