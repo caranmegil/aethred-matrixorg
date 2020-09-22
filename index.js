@@ -23,6 +23,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 const sdk = require('matrix-js-sdk');
 const request = require('superagent');
 const moment = require('moment')
+const cmdExp = /^\!([a-zA-Z0-9]+)(?: (.*))?$/
+
+function processCommand(m) {
+    switch(m[1]) {
+        case 'leave':
+	    break;
+    }
+}
+
+setInterval(() => {
+    var rooms = client.getRooms();
+    rooms.forEach( (room) => {
+        var me = room.getMember(process.env.USER)
+        if(!me) return
+
+        if (me.membership === 'invite') {
+            client.joinRoom(room.currentState.roomId).catch((err) => {
+                console.log(err)
+            })
+        }
+    })
+}, 5000)
 
 const client = sdk.createClient(process.env.HOST)
 var startUp = moment()
@@ -41,26 +63,31 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
 
     startUp = evtOriginServerTS
 
-    if (evt.getType() === "m.room.message" && content.body.startsWith("aethred:")) {
-        request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
-            if (response.body.results.includes('commander') || response.body.results.includes('master')) {
-                request.post(process.env.LINGUA_HOST, {
-                    text: content.body
-                }).then( (response) => {
-                    let responses = response.body.response
-                    responses.forEach((item) => {
-                        var content = {
-                            "body": item,
-                            "msgtype": "m.text"
-                        };
+    if (evt.getType() === "m.room.message") {
+        var m = content.body.match(cmdExp)
+	    if (m != null) {
+	        processCommand(m)
+	    } else if( content.body.startsWith("aethred:")) {
+            request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
+                if (response.body.results.includes('commander') || response.body.results.includes('master')) {
+                    request.post(process.env.LINGUA_HOST, {
+                        text: content.body
+                    }).then( (response) => {
+                        let responses = response.body.response
+                        responses.forEach((item) => {
+                            var content = {
+                                "body": item,
+                                "msgtype": "m.text"
+                            };
 
-                        client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
-                            console.log(err);
-                        });
+                            client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
+                                 console.log(err);
+                            });
+                       })
                     })
-                })
-            }
-        })
+	            }
+            })
+  	    }
     }
 })
 
