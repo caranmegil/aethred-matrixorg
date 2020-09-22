@@ -8,6 +8,7 @@
   "private": null,
   "dependencies": {
     "matrix-js-sdk": "^8.3.0",
+    "moment": "^2.29.0",
     "superagent": "^6.1.0"
   }
 }

@@ -22,12 +22,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 const sdk = require('matrix-js-sdk');
 const request = require('superagent');
+const moment = require('moment')
 
 const client = sdk.createClient(process.env.HOST)
-
+var startUp = moment()
 client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     let content = evt.getContent()
 
+    if (toStartOfTimeline) {
+        return;
+    }
+
+    const evtOriginServerTS = moment(evt.event.origin_server_ts);
+    
+    if (startUp.isAfter(evtOriginServerTS)) {
+        return;
+    }
+
+    startUp = evtOriginServerTS
 
     if (evt.getType() === "m.room.message" && content.body.startsWith("aethred:")) {
         request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
