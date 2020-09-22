@@ -35,9 +35,8 @@ function processCommand(m) {
 setInterval(() => {
     var rooms = client.getRooms();
     rooms.forEach( (room) => {
-        var me = room.getMember(process.env.USER)
-        if(!me) return
-
+        var me = room.getMember(`@${process.env.USER}:${process.env.HOST}`)
+	if(!me) return
         if (me.membership === 'invite') {
             client.joinRoom(room.currentState.roomId).catch((err) => {
                 console.log(err)
@@ -46,7 +45,7 @@ setInterval(() => {
     })
 }, 5000)
 
-const client = sdk.createClient(process.env.HOST)
+const client = sdk.createClient(`https://${process.env.HOST}`)
 var startUp = moment()
 client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     let content = evt.getContent()
@@ -67,7 +66,7 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
         var m = content.body.match(cmdExp)
 	    if (m != null) {
 	        processCommand(m)
-	    } else if( content.body.startsWith("aethred:")) {
+	    } else if( content.body.startsWith(`${process.env.USER}:")) {
             request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
                 if (response.body.results.includes('commander') || response.body.results.includes('master')) {
                     request.post(process.env.LINGUA_HOST, {
