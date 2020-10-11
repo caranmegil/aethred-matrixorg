@@ -45,55 +45,60 @@ setInterval(() => {
     })
 }, 5000)
 
-const client = sdk.createClient(`https://${process.env.HOST}`)
+var client = sdk.createClient(`https://${process.env.HOST}`)
 var startUp = moment()
-client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
-    let content = evt.getContent()
-
-    if (toStartOfTimeline) {
-        return;
-    }
-
-    const evtOriginServerTS = moment(evt.event.origin_server_ts);
-    
-    if (startUp.isAfter(evtOriginServerTS)) {
-        return;
-    }
-
-    startUp = evtOriginServerTS
-
-    if (evt.getType() === "m.room.message") {
-        var m = content.body.match(cmdExp)
-	    if (m != null) {
-	        processCommand(m)
-	    } else if( content.body.startsWith(`${process.env.USER}:`)) {
-            request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
-                if (response.body.results.includes('commander') || response.body.results.includes('master')) {
-                    request.post(process.env.LINGUA_HOST, {
-                        text: content.body
-                    }).then( (response) => {
-                        let responses = response.body.response
-                        responses.forEach((item) => {
-                            var content = {
-                                "body": item,
-                                "msgtype": "m.text"
-                            };
-
-                            client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
-                                 console.log(err);
-                            });
-                       })
-                    })
-	            }
-            })
-  	    }
-    }
-})
 
 client.login("m.login.password", {"user": process.env.USER, "password": process.env.PASSWORD})
-.then( (response) => {
-    console.log(response)
+.then( (res) => {
+    console.log(res)
+    client = sdk.createClient({
+        baseUrl: `https://${process.env.HOST}`,
+        accessToken: res.access_token,
+        userId: process.env.USER
+      });
     client.startClient()
+    client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
+        let content = evt.getContent()
+    
+        if (toStartOfTimeline) {
+            return;
+        }
+    
+        const evtOriginServerTS = moment(evt.event.origin_server_ts);
+        
+        if (startUp.isAfter(evtOriginServerTS)) {
+            return;
+        }
+    
+        startUp = evtOriginServerTS
+    
+        if (evt.getType() === "m.room.message") {
+            var m = content.body.match(cmdExp)
+            if (m != null) {
+                processCommand(m)
+            } else if( content.body.startsWith(`${process.env.USER}:`)) {
+                request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
+                    if (response.body.results.includes('commander') || response.body.results.includes('master')) {
+                        request.post(process.env.LINGUA_HOST, {
+                            text: content.body
+                        }).then( (response) => {
+                            let responses = response.body.response
+                            responses.forEach((item) => {
+                                var content = {
+                                    "body": item,
+                                    "msgtype": "m.text"
+                                };
+    
+                                client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
+                                     console.log(err);
+                                });
+                           })
+                        })
+                    }
+                })
+              }
+        }
+    })
 }).catch( (err) => {
     console.log(err)
 })
