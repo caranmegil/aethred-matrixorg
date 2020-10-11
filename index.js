@@ -90,10 +90,6 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     }
 })
 
-client.on('sync', (evt) => {
-    console.log(evt)
-})
-
 client.login("m.login.password", {"user": process.env.USER, "password": process.env.PASSWORD})
 .then( (response) => {
     console.log(response)
