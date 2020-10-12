@@ -63,7 +63,24 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
 
     if (evt.getType() === "m.room.message") {
         var m = content.body.match(cmdExp)
-	    if (m != null) {
+	    let chance = Math.floor(Math.random() * 100)
+	    if (chance < 2) {
+                request.post(process.env.LINGUA_HOST, {
+                        text: content.body
+                    }).then( (response) => {
+                        let responses = response.body.response
+                        responses.forEach((item) => {
+                            var content = {
+                                "body": item,
+                                "msgtype": "m.text"
+                            };
+
+                            client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
+                                 console.log(err);
+                            });
+                       })
+		    })
+	    } else if (m != null) {
 	        processCommand(m)
 	    } else if( content.body.startsWith(`${process.env.USER}: `)) {
             request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
