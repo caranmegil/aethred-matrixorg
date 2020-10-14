@@ -60,11 +60,12 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     }
 
     startUp = evtOriginServerTS
-
-    if (evt.getType() === "m.room.message") {
+	console.log(evt)
+	console.log(content)
+    if (evt.getType() === "m.room.message" || evt.getType() === "m.room.encrypted") {
         var m = content.body.match(cmdExp)
 	    let chance = Math.floor(Math.random() * 100)
-	    if (chance < 2) {
+	    if (chance < 20) {
                 request.post(process.env.LINGUA_HOST, {
                         text: content.body
                     }).then( (response) => {
