@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
+const StorageShim = require('node-storage-shim')
 global.Olm = require('./olm')
 const sdk = require('matrix-js-sdk');
 const request = require('superagent');
@@ -63,7 +64,9 @@ setInterval(() => {
     })
 }, 5000)
 
-const client = sdk.createClient(`https://${process.env.HOST}`)
+const client = sdk.createClient(`https://${process.env.HOST}`, {
+    sessionStore: new sdk.WebStorageSessionStore(new StorageShim())
+})
 var startUp = moment()
 client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     let content = evt.getContent()
