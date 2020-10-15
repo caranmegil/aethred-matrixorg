@@ -9,6 +9,7 @@
   "dependencies": {
     "matrix-js-sdk": "^8.3.0",
     "moment": "^2.29.0",
+    "node-storage-shim": "^2.0.1",
     "superagent": "^6.1.0"
   }
 }
