@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-global.Olm = require('olm')
+global.Olm = require('./olm')
 const sdk = require('matrix-js-sdk');
 const request = require('superagent');
 const moment = require('moment');
