@@ -100,9 +100,9 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
 })
 
 client.login("m.login.password", {"user": process.env.USER, "password": process.env.PASSWORD})
-.then( (response) => {
+.then( async (response) => {
     console.log(response)
-    client.initCrypto()
+    await client.initCrypto()
     client.startClient({initialSyncLimit: 0})
 }).catch( (err) => {
     console.log(err)
