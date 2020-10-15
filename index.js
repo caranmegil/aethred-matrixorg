@@ -19,9 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
+global.Olm = require('olm')
 const sdk = require('matrix-js-sdk');
 const request = require('superagent');
-const moment = require('moment')
+const moment = require('moment');
 const cmdExp = /^\!([a-zA-Z0-9]+)(?: (.*))?$/
 
 function processCommand(m) {
@@ -29,6 +30,24 @@ function processCommand(m) {
         case 'leave':
 	    break;
     }
+}
+
+async function getLingua(client) {
+    let response = await request.post(process.env.LINGUA_HOST, {
+        text: content.body
+    })
+    
+    let responses = response.body.response
+    responses.forEach((item) => {
+        var content = {
+            "body": item,
+            "msgtype": "m.text"
+        };
+
+        client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
+             console.log(err);
+        });
+   })
 }
 
 setInterval(() => {
@@ -52,7 +71,6 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     if (toStartOfTimeline) {
         return;
     }
-
     const evtOriginServerTS = moment(evt.event.origin_server_ts);
     
     if (startUp.isAfter(evtOriginServerTS)) {
@@ -61,46 +79,20 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
 
     startUp = evtOriginServerTS
 	console.log(evt)
-	console.log(content)
-    if (evt.getType() === "m.room.message" || evt.getType() === "m.room.encrypted") {
+    console.log(content)
+    if (evt.getType() === "m.room.encrypted") {
+        
+    } else if (evt.getType() === "m.room.message") {
         var m = content.body.match(cmdExp)
 	    let chance = Math.floor(Math.random() * 100)
 	    if (chance < 20) {
-                request.post(process.env.LINGUA_HOST, {
-                        text: content.body
-                    }).then( (response) => {
-                        let responses = response.body.response
-                        responses.forEach((item) => {
-                            var content = {
-                                "body": item,
-                                "msgtype": "m.text"
-                            };
-
-                            client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
-                                 console.log(err);
-                            });
-                       })
-		    })
-	    } else if (m != null) {
+            getLingua(client)
+        } else if (m != null) {
 	        processCommand(m)
 	    } else if( content.body.startsWith(`${process.env.USER}: `)) {
             request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
                 if (response.body.results.includes('commander') || response.body.results.includes('master')) {
-                    request.post(process.env.LINGUA_HOST, {
-                        text: content.body
-                    }).then( (response) => {
-                        let responses = response.body.response
-                        responses.forEach((item) => {
-                            var content = {
-                                "body": item,
-                                "msgtype": "m.text"
-                            };
-
-                            client.sendEvent(room.currentState.roomId, "m.room.message", content, "", (err, res) => {
-                                 console.log(err);
-                            });
-                       })
-                    })
+                    getLingua(client)
 	            }
             })
   	    }
@@ -110,6 +102,7 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
 client.login("m.login.password", {"user": process.env.USER, "password": process.env.PASSWORD})
 .then( (response) => {
     console.log(response)
+    client.initCrypto()
     client.startClient({initialSyncLimit: 0})
 }).catch( (err) => {
     console.log(err)
