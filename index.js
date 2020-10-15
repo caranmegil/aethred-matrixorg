@@ -64,9 +64,7 @@ setInterval(() => {
     })
 }, 5000)
 
-const client = sdk.createClient(`https://${process.env.HOST}`, {
-    sessionStore: new sdk.WebStorageSessionStore(new StorageShim())
-})
+const client = sdk.createClient(`https://${process.env.HOST}`)
 var startUp = moment()
 client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     let content = evt.getContent()
@@ -102,7 +100,7 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     }
 })
 
-client.login("m.login.password", {"user": process.env.USER, "password": process.env.PASSWORD})
+client.login("m.login.password", {"user": process.env.USER, "password": process.env.PASSWORD, sessionStore: new sdk.WebStorageSessionStore(new StorageShim())})
 .then( async (response) => {
     console.log(response)
     await client.initCrypto()
