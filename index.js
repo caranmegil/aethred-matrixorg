@@ -33,9 +33,9 @@ function processCommand(m) {
     }
 }
 
-async function getLingua(client) {
+async function getLingua(client, body, room) {
     let response = await request.post(process.env.LINGUA_HOST, {
-        text: content.body
+        text: body
     })
     
     let responses = response.body.response
@@ -86,22 +86,19 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     }
 
     startUp = evtOriginServerTS
-	console.log(evt)
-    console.log(content)
-    if (evt.getType() === "m.room.encrypted") {
-        
-    } else if (evt.getType() === "m.room.message") {
-        var m = content.body.match(cmdExp)
+    if (evt.getType() === "m.room.encrypted" || evt.getType() === "m.room.message") {
+	var body = evt.event.content.body ? evt.event.content.body : content.body
+        var m = body.match(cmdExp)
 	    let chance = Math.floor(Math.random() * 100)
 	    if (chance < 20) {
-            getLingua(client)
+            getLingua(client, body, room)
         } else if (m != null) {
 	        processCommand(m)
-	    } else if( content.body.startsWith(`${process.env.USER}: `)) {
+	    } else if( body.startsWith(`${process.env.USER}: `)) {
             request.get(`${process.env.PERMISSIONS_HOST}/matrix/${evt.event.sender}`).then((response) => {
                 if (response.body.results.includes('commander') || response.body.results.includes('master')) {
-                    getLingua(client)
-	            }
+                    getLingua(client, body, room)
+	        }
             })
   	    }
     }

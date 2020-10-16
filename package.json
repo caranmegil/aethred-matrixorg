@@ -7,7 +7,7 @@
   "license": "GPL-2.0-only",
   "private": null,
   "dependencies": {
-    "matrix-js-sdk": "^8.3.0",
+    "matrix-js-sdk": "^8.5.0",
     "moment": "^2.29.0",
     "node-storage-shim": "^2.0.1",
     "superagent": "^6.1.0"
