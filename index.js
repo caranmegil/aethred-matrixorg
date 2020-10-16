@@ -111,6 +111,8 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     // console.log(response)
     client.initCrypto().then( () => {
         client.startClient({initialSyncLimit: 0})
+    }).catch( (e) => {
+        console.error(e)
     })
 // }).catch( (err) => {
     // console.log(err)
