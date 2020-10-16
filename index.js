@@ -69,6 +69,7 @@ const client = sdk.createClient({
     sessionStore: new sdk.WebStorageSessionStore(new StorageShim()),
     accessToken: process.env.ACCESS_TOKEN,
     userId: `@${process.env.USER}@${process.env.HOST}`,
+    deviceId: process.env.DEVICE_ID,
 })
 
 var startUp = moment()
