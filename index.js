@@ -86,6 +86,7 @@ client.on("Room.timeline", (evt, room, toStartOfTimeline) => {
     }
 
     startUp = evtOriginServerTS
+	console.log(evt)
     if (evt.getType() === "m.room.encrypted" || evt.getType() === "m.room.message") {
 	var body = evt.event.content.body ? evt.event.content.body : content.body
         var m = body.match(cmdExp)
