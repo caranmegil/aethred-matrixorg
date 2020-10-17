@@ -66,6 +66,7 @@ setInterval(() => {
 
 const client = sdk.createClient({
     baseUrl: `https://${process.env.HOST}`,
+    idBaseUrl: 'https://vector.im',
     sessionStore: new sdk.WebStorageSessionStore(new StorageShim()),
     accessToken: process.env.ACCESS_TOKEN,
     userId: `@${process.env.USER}:${process.env.HOST}`,
